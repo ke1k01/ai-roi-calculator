@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Automation ROI Calculator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 30px 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; color: white; font-size: 2.2em; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: rgba(255,255,255,0.9); margin-bottom: 30px; font-size: 1.1em; }
+        .card { background: white; border-radius: 16px; padding: 32px; margin-bottom: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .card h2 { color: #4a4a6a; margin-bottom: 20px; font-size: 1.4em; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .input-group { margin-bottom: 18px; }
+        .input-group label { display: block; font-weight: 600; color: #555; margin-bottom: 6px; }
+        .input-group small { color: #888; display: block; margin-bottom: 4px; }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em; transition: border-color 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: #667eea; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+        .btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.4); }
+        .results { display: none; }
+        .results.active { display: block; }
+        .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0; }
+        .result-item { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .result-item.positive { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .result-item.caution { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
+        .result-item .value { font-size: 2em; font-weight: 800; }
+        .result-item .label { font-size: 0.85em; margin-top: 4px; opacity: 0.9; }
+        .breakdown { margin-top: 20px; }
+        .breakdown table { width: 100%; border-collapse: collapse; }
+        .breakdown th, .breakdown td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #eee; }
+        .breakdown th { background: #f8f8ff; color: #4a4a6a; }
+        .verdict { text-align: center; padding: 20px; margin-top: 20px; border-radius: 12px; }
+        .verdict.good { background: #e8f5e9; color: #2e7d32; }
+        .verdict.great { background: #e8eaf6; color: #283593; }
+        .verdict.caution { background: #fff3e0; color: #e65100; }
+        .verdict h3 { margin-bottom: 8px; font-size: 1.3em; }
+        .footer { text-align: center; color: rgba(255,255,255,0.8); margin-top: 30px; padding: 20px; }
+        .footer a { color: white; }
+        .print-btn { width: auto; padding: 10px 24px; background: white; color: #667eea; border: 2px solid #667eea; border-radius: 8px; font-size: 0.95em; font-weight: 600; cursor: pointer; margin-top: 16px; }
+        .print-btn:hover { background: #667eea; color: white; }
+        @media print { body { background: white; padding: 10px; } h1, .subtitle, .btn, .print-btn { display: none; } .card { box-shadow: none; border: 1px solid #ddd; } .results { display: block !important; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🤖 AI Automation ROI Calculator</h1>
+    <p class="subtitle">Calculate your business's return on AI automation investment</p>
+
+    <div class="card">
+        <h2>📋 Your Business Profile</h2>
+        <div class="row">
+            <div class="input-group">
+                <label>Monthly Revenue ($)</label>
+                <small>Current monthly business revenue</small>
+                <input type="number" id="monthly_revenue" value="25000" placeholder="25000">
+            </div>
+            <div class="input-group">
+                <label>Number of Employees</label>
+                <small>Full-time equivalents</small>
+                <input type="number" id="employees" value="10" placeholder="10">
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <label>Avg. Hourly Wage ($)</label>
+                <small>Weighted average across all staff</small>
+                <input type="number" id="hourly_wage" value="30" placeholder="30">
+            </div>
+            <div class="input-group">
+                <label>Industries</label>
+                <small>Business type</small>
+                <select id="industry">
+                    <option value="generic">General / Other</option>
+                    <option value="agency">Marketing Agency</option>
+                    <option value="professional">Professional Services</option>
+                    <option value="ecommerce">E-Commerce / Retail</option>
+                    <option value="saas">SaaS / Tech</option>
+                    <option value="consulting">Consulting</option>
+                    <option value="healthcare">Healthcare</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>⚙️ Automation Parameters</h2>
+        <div class="row">
+            <div class="input-group">
+                <label>Hours Saved Per Employee/Week</label>
+                <small>Estimated time freed by automation</small>
+                <input type="number" id="hours_saved" value="6" step="0.5" placeholder="6">
+            </div>
+            <div class="input-group">
+                <label>Automation Investment ($/month)</label>
+                <small>Software, tools, and services cost</small>
+                <input type="number" id="investment" value="1500" placeholder="1500">
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <label>Revenue Uplift (%)</label>
+                <small>Expected revenue increase from automation</small>
+                <input type="number" id="revenue_uplift" value="10" step="0.5" placeholder="10">
+            </div>
+            <div class="input-group">
+                <label>Error Reduction (%)</label>
+                <small>Fewer costly errors & rework</small>
+                <input type="number" id="error_reduction" value="15" placeholder="15">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Estimated Monthly Error Costs Before ($)</label>
+            <small>Cost of rework, mistakes, inefficiencies</small>
+            <input type="number" id="error_costs" value="2000" placeholder="2000">
+        </div>
+        <button class="btn" onclick="calculateROI()">🚀 Calculate My ROI</button>
+    </div>
+
+    <div class="card results" id="results">
+        <h2>📊 Your ROI Results</h2>
+        <div class="result-grid" id="resultGrid"></div>
+        <div class="breakdown" id="breakdown"></div>
+        <div class="verdict" id="verdict"></div>
+        <div style="text-align: center;">
+            <button class="print-btn" onclick="window.print()">📄 Print / Save as PDF</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🔝 Top Automation Ideas for Your Industry</h2>
+        <div id="automationIdeas"></div>
+    </div>
+
+    <div class="footer">
+        <p><strong>AI Automation ROI Calculator</strong></p>
+        <p>Create your complete automation strategy with 50+ proven ideas</p>
+        <p style="margin-top: 10px; font-size: 0.85em; opacity: 0.8;">
+            This calculator is a complimentary tool. Results are estimates based on industry averages.
+        </p>
+    </div>
+</div>
+
+<script>
+function formatCurrency(n) { return '$' + Number(n).toLocaleString('en-US', {maximumFractionDigits:0}); }
+
+const automationIdeasByIndustry = {
+    generic: [
+        "Email auto-responders & triage for customer inquiries",
+        "Invoice generation & accounts payable automation",
+        "Social media scheduling with AI-generated captions",
+        "Chatbot for 24/7 website customer support",
+        "Automated meeting scheduling & calendar management",
+        "Document generation (contracts, proposals, reports)",
+        "Expense report processing & receipt scanning",
+        "Lead scoring & CRM data enrichment",
+        "Automated weekly reporting & dashboard generation",
+        "Employee onboarding workflow automation"
+    ],
+    agency: [
+        "AI content drafting for client campaigns",
+        "Automated social media content calendar",
+        "Client reporting & performance dashboard auto-generation",
+        "Competitor analysis & market research automation",
+        "Ad creative A/B testing & optimization",
+        "Automated SEO audits & recommendations",
+        "Email campaign segmentation & sending",
+        "Influencer outreach & relationship management",
+        "Brand monitoring & sentiment analysis alerts",
+        "Project status reporting to clients"
+    ],
+    professional: [
+        "Document review & contract analysis with AI",
+        "Client intake form processing & data entry",
+        "Automated appointment scheduling & reminders",
+        "Time tracking & billable hours capture",
+        "Invoice generation & payment follow-ups",
+        "Knowledge base & FAQ chatbot",
+        "Research & case brief summarization",
+        "Compliance monitoring & regulatory updates",
+        "Document management & version control",
+        "Client communication templates & personalization"
+    ],
+    ecommerce: [
+        "Product description generation at scale",
+        "Automated inventory management & reorder alerts",
+        "Dynamic pricing optimization",
+        "Customer review analysis & response templates",
+        "Personalized product recommendation engine",
+        "Abandoned cart recovery sequences",
+        "Return & refund processing automation",
+        "Shipping notification & tracking updates",
+        "Supplier communication & PO automation",
+        "Visual search & image tagging"
+    ],
+    saas: [
+        "Automated testing & QA workflows",
+        "Customer onboarding email sequences",
+        "Usage-based billing & invoicing",
+        "Feature request collection & prioritization",
+        "Automated code documentation",
+        "Churn prediction & retention campaigns",
+        "User behavior analytics & reporting",
+        "Bug tracking & triage automation",
+        "API monitoring & health alerts",
+        "Technical support ticket routing & resolution"
+    ],
+    consulting: [
+        "Research report generation & summarization",
+        "Client proposal & SOW generation",
+        "Meeting notes & action item extraction",
+        "Data analysis & visualization automation",
+        "Benchmarking & industry comparison reports",
+        "Resource scheduling & utilization tracking",
+        "Knowledge management across projects",
+        "Expense tracking & client billing",
+        "Lead nurturing & follow-up workflows",
+        "Slide deck auto-generation"
+    ],
+    healthcare: [
+        "Appointment scheduling & patient reminders",
+        "Insurance claim processing automation",
+        "Patient intake form processing",
+        "Medical transcription & note summarization",
+        "Prescription refill automation",
+        "Compliance tracking & audit preparation",
+        "Staff scheduling optimization",
+        "Patient satisfaction survey automation",
+        "Billing & collections follow-up",
+        "Lab result notification system"
+    ]
+};
+
+function calculateROI() {
+    const revenue = parseFloat(document.getElementById('monthly_revenue').value) || 0;
+    const employees = parseFloat(document.getElementById('employees').value) || 0;
+    const wage = parseFloat(document.getElementById('hourly_wage').value) || 0;
+    const industry = document.getElementById('industry').value;
+    const hoursSaved = parseFloat(document.getElementById('hours_saved').value) || 0;
+    const investment = parseFloat(document.getElementById('investment').value) || 0;
+    const uplift = parseFloat(document.getElementById('revenue_uplift').value) || 0;
+    const errorRed = parseFloat(document.getElementById('error_reduction').value) || 0;
+    const errorCosts = parseFloat(document.getElementById('error_costs').value) || 0;
+
+    const monthlyTimeValue = employees * hoursSaved * wage * 4;
+    const monthlyRevenueGain = revenue * (uplift / 100);
+    const monthlyErrorSavings = errorCosts * (errorRed / 100);
+    const totalMonthlyBenefit = monthlyTimeValue + monthlyRevenueGain + monthlyErrorSavings;
+    const netMonthlyBenefit = totalMonthlyBenefit - investment;
+    const roi = investment > 0 ? ((totalMonthlyBenefit - investment) / investment * 100) : 0;
+    const paybackMonths = investment > 0 ? investment / (totalMonthlyBenefit) : '∞';
+    const annualBenefit = netMonthlyBenefit * 12;
+    const annualROI = investment > 0 ? (((totalMonthlyBenefit * 12) - (investment * 12)) / (investment * 12) * 100) : 0;
+
+    let resultHTML = '';
+    function addItem(value, label, cls) {
+        resultHTML += `<div class="result-item ${cls || ''}"><div class="value">${value}</div><div class="label">${label}</div></div>`;
+    }
+    const roiClass = roi >= 200 ? 'positive' : (roi >= 50 ? '' : 'caution');
+    addItem(roi.toFixed(0) + '%', 'Monthly ROI', roiClass);
+    addItem(formatCurrency(netMonthlyBenefit), 'Net Monthly Benefit', netMonthlyBenefit > 0 ? 'positive' : 'caution');
+    addItem(formatCurrency(totalMonthlyBenefit), 'Total Monthly Savings', '');
+    addItem(paybackMonths === '∞' ? 'N/A' : paybackMonths.toFixed(1) + ' mo', 'Payback Period', '');
+    addItem(formatCurrency(annualBenefit), 'Annual Net Benefit', annualBenefit > 0 ? 'positive' : 'caution');
+    addItem(annualROI.toFixed(0) + '%', 'Annual ROI', annualROI >= 100 ? 'positive' : '');
+    document.getElementById('resultGrid').innerHTML = resultHTML;
+
+    document.getElementById('breakdown').innerHTML = `
+        <table>
+            <thead><tr><th>Benefit Category</th><th>Monthly Value</th><th>Annual Value</th></tr></thead>
+            <tbody>
+                <tr><td>Time Savings (${hoursSaved}h/wk × ${employees} emp × $${wage}/hr × 4wk)</td><td>${formatCurrency(monthlyTimeValue)}</td><td>${formatCurrency(monthlyTimeValue * 12)}</td></tr>
+                <tr><td>Revenue Uplift (${uplift}% of ${formatCurrency(revenue)})</td><td>${formatCurrency(monthlyRevenueGain)}</td><td>${formatCurrency(monthlyRevenueGain * 12)}</td></tr>
+                <tr><td>Error Cost Reduction (${errorRed}% of ${formatCurrency(errorCosts)})</td><td>${formatCurrency(monthlyErrorSavings)}</td><td>${formatCurrency(monthlyErrorSavings * 12)}</td></tr>
+                <tr><td><strong>Total Monthly Benefit</strong></td><td><strong>${formatCurrency(totalMonthlyBenefit)}</strong></td><td><strong>${formatCurrency(totalMonthlyBenefit * 12)}</strong></td></tr>
+                <tr><td>Less: Investment</td><td>-${formatCurrency(investment)}</td><td>-${formatCurrency(investment * 12)}</td></tr>
+                <tr style="background: #f0fff0;"><td><strong>NET BENEFIT</strong></td><td><strong>${formatCurrency(netMonthlyBenefit)}</strong></td><td><strong>${formatCurrency(annualBenefit)}</strong></td></tr>
+            </tbody>
+        </table>`;
+
+    const verdictClass = roi >= 300 ? 'great' : (roi >= 100 ? 'good' : 'caution');
+    const verdictText = roi >= 300 ? '🎯 Exceptional ROI — Automate ASAP!' :
+                        roi >= 100 ? '✅ Strong ROI — Move forward confidently!' :
+                        roi >= 0 ? '⚠️ Moderate ROI — Start with high-impact automations first' :
+                        '🔴 Negative ROI — Reassess your automation approach';
+    document.getElementById('verdict').innerHTML = `<div class="verdict ${verdictClass}"><h3>${verdictText}</h3><p>Based on your inputs, automation could transform your business operations with a ${roi.toFixed(0)}% monthly return on investment.</p></div>`;
+    document.getElementById('results').classList.add('active');
+
+    const ideas = automationIdeasByIndustry[industry];
+    let ideasHTML = '<ol style="padding-left: 20px;">';
+    ideas.forEach(idea => { ideasHTML += `<li style="margin-bottom: 8px; line-height: 1.4;">${idea}</li>`; });
+    ideasHTML += '</ol><p style="margin-top: 12px; color: #888; font-size: 0.9em;">💡 Get 50+ detailed automation ideas in the full guide!</p>';
+    document.getElementById('automationIdeas').innerHTML = ideasHTML;
+
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
